@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>매일 매일 영단어 암기 트래커</title>
+    <title>스마트 단어 암기 & 오답 반복 테스트</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -28,276 +28,326 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
 
-        /* 🎴 플래시카드 스타일 */
-        .card {
+        /* 📝 단어 등록 및 테스트 화면 전환 영역 */
+        .section-box {
+            margin-bottom: 25px;
+        }
+
+        /* 단어장 리스트 미리보기 */
+        .vocab-preview {
             background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 12px;
-            padding: 40px 20px;
-            text-align: center;
-            margin-bottom: 25px;
-            min-height: 140px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .word-en {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #007bff;
-            margin-bottom: 10px;
-        }
-
-        .word-kr {
-            font-size: 1.5rem;
-            color: #28a745;
-            font-weight: 600;
-            display: none; /* 평소엔 숨겨둠 */
-            margin-top: 10px;
-        }
-
-        .show-btn {
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            margin-top: 10px;
-        }
-        .show-btn:hover { background-color: #5a6268; }
-
-        /* 🕹️ 컨트롤 버튼 구역 */
-        .action-group {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 14px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            border: none;
+            border: 1px solid #dee2e6;
             border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
+            padding: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+        .vocab-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #eee;
         }
 
-        .btn-random { background-color: #17a2b8; color: white; }
-        .btn-random:hover { background-color: #138496; }
-
-        .btn-success { background-color: #28a745; color: white; }
-        .btn-success:hover { background-color: #218838; }
-
-        /* 📊 통계 대시보드 */
-        .stats-box {
-            background-color: #f1f3f5;
-            padding: 20px;
-            border-radius: 10px;
-        }
-        .progress-bar-container {
-            background-color: #dee2e6;
-            width: 100%;
-            height: 12px;
-            border-radius: 6px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
-        #progressBar {
-            background-color: #28a745;
-            width: 0%;
-            height: 100%;
-            transition: width 0.3s ease;
-        }
-
-        /* ➕ 단어 추가 폼 */
-        .add-section {
-            margin-top: 30px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-        }
-        .add-inputs {
+        .input-row {
             display: flex;
             gap: 10px;
-            margin-top: 10px;
+            margin-bottom: 10px;
         }
-        .add-inputs input {
+        .input-row input {
             flex: 1;
             padding: 10px;
             border: 1px solid #ced4da;
             border-radius: 6px;
             font-size: 1rem;
         }
-        .btn-add {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
+
+        .btn {
+            padding: 12px 20px;
+            font-size: 1rem;
             font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
         }
-        .btn-add:hover { background-color: #0056b3; }
+        .btn-primary { background-color: #007bff; color: white; width: 100%; }
+        .btn-primary:hover { background-color: #0056b3; }
+        
+        .btn-success { background-color: #28a745; color: white; width: 100%; }
+        .btn-success:hover { background-color: #218838; }
+
+        /* 🎴 테스트 카드 디자인 */
+        .test-card {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .target-word {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        .answer-input-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .answer-input-box input {
+            flex: 1;
+            padding: 12px;
+            font-size: 1.2rem;
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        /* 판정 결과 표시 (O / X) */
+        .result-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 40px;
+        }
+        .correct-mark { color: #28a745; }
+        .wrong-mark { color: #dc3545; }
+
+        .round-info {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 15px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 
-    <h1>🧠 데일리 영단어 암기 트래커</h1>
-    <p class="subtitle">매일 무작위로 단어를 뽑고 외운 개수를 체크해 보세요!</p>
+    <h1>🧠 스마트 오답 반복 단어 테스트</h1>
+    <p class="subtitle">직접 단어를 등록하고 다 맞출 때까지 무한 반복 테스트를 진행하세요!</p>
 
     <div class="container">
-        <!-- 🎴 단어 플래시카드 화면 -->
-        <div class="card" id="cardBox">
-            <div class="word-en" id="displayEn">단어장을 준비 중입니다...</div>
-            <button class="show-btn" id="toggleMeaningBtn" onclick="toggleMeaning()">뜻 보기</button>
-            <div class="word-kr" id="displayKr">뜻이 여기에 표시됩니다</div>
+        
+        <!-- [1단계] 단어장 직접 등록 화면 -->
+        <div id="setupSection" class="section-box">
+            <h3>1️⃣ 암기할 단어 직접 등록하기</h3>
+            <p style="font-size: 0.9rem; color: #666;">시험 볼 영어 단어와 뜻을 입력하고 추가하세요. (최소 1개 이상)</p>
+            
+            <div class="vocab-preview" id="vocabPreviewList">
+                <div style="color: #888; text-align: center;">등록된 단어가 없습니다. 아래에서 추가해주세요.</div>
+            </div>
+
+            <div class="input-row">
+                <input type="text" id="inputEn" placeholder="영어 단어 (예: Apple)">
+                <input type="text" id="inputKr" placeholder="한국어 뜻 (예: 사과)">
+                <button class="btn btn-primary" style="width: 80px;" onclick="addWordToMyList()">추가</button>
+            </div>
+
+            <button class="btn btn-success" style="margin-top: 15px;" onclick="startTest()">🚀 테스트 시작하기</button>
         </div>
 
-        <!-- 🕹️ 액션 버튼 (다음 랜덤 단어 / 외움 완료) -->
-        <div class="action-group">
-            <button class="btn btn-random" onclick="getRandomWord()">🎲 다른 랜덤 단어</button>
-            <button class="btn btn-success" onclick="markAsMemorized()">✅ 외웠어요! 완료</button>
+        <!-- [2단계] 테스트 진행 화면 (평소엔 숨김) -->
+        <div id="testSection" class="section-box" style="display: none;">
+            <div class="round-info" id="roundInfoText">현재 1회차 진행 중 (남은 단어: 0개)</div>
+
+            <div class="test-card">
+                <div style="font-size: 0.9rem; color: #666; margin-bottom: 5px;">다음 영어 단어의 뜻을 입력하세요</div>
+                <div class="target-word" id="testWordEn">Word</div>
+
+                <div class="answer-input-box" id="inputBoxArea">
+                    <input type="text" id="userAnswerInput" placeholder="뜻을 입력 후 엔터 또는 확인" onkeypress="checkEnter(event)">
+                    <button class="btn btn-primary" style="width: 100px;" id="submitBtn" onclick="submitAnswer()">제출</button>
+                </div>
+
+                <!-- 정답/오답 결과 및 미리 작성한 뜻 표시 -->
+                <div class="result-display" id="resultDisplayArea"></div>
+            </div>
+
+            <button class="btn btn-primary" id="nextBtn" style="display: none;" onclick="nextStep()">다음 단어로 넘어가기 ➡️</button>
         </div>
 
-        <!-- 📊 오늘의 학습 통계 -->
-        <div class="stats-box">
-            <strong>📊 오늘의 암기 현황</strong>
-            <div style="margin-top: 8px;">
-                오늘 외운 단어: <span id="memorizedCount" style="font-weight:bold; color:#28a745;">0</span>개 / 
-                목표 단어: <span id="goalCount" style="font-weight:bold;">10</span>개
-            </div>
-            <div class="progress-bar-container">
-                <div id="progressBar"></div>
-            </div>
+        <!-- [3단계] 모든 단어 정복 완료 화면 (평소엔 숨김) -->
+        <div id="completeSection" class="section-box" style="display: none; text-align: center; padding: 20px;">
+            <h2 style="color: #28a745; font-size: 2rem;">🎉 완벽하게 다 맞췄습니다!</h2>
+            <p style="font-size: 1.1rem; color: #555; margin: 15px 0;">등록한 모든 단어를 오답 없이 정복하셨습니다. 수고하셨어요!</p>
+            <button class="btn btn-primary" onclick="resetAll()">처음으로 돌아가기</button>
         </div>
 
-        <!-- ➕ 나만의 단어 추가하기 구역 -->
-        <div class="add-section">
-            <strong>➕ 나만의 단어 추가하기</strong>
-            <div class="add-inputs">
-                <input type="text" id="newEn" placeholder="영어 단어 (예: Apple)">
-                <input type="text" id="newKr" placeholder="한국어 뜻 (예: 사과)">
-                <button class="btn-add" onclick="addNewWord()">추가</button>
-            </div>
-        </div>
     </div>
 
     <script>
-        // 기본 단어장 데이터베이스 (원하는 만큼 추가하거나 수정 가능합니다)
-        let vocabList = [
-            { en: "Achieve", kr: "달성하다, 성취하다" },
-            { en: "Significant", kr: "중대한, 의미 있는" },
-            { en: "Environment", kr: "환경" },
-            { en: "Challenge", kr: "도전, 난제" },
-            { en: "Efficient", kr: "효율적인" },
-            { en: "Establish", kr: "설립하다, 확립하다" },
-            { en: "Perspective", kr: "관점, 시각" },
-            { en: "Available", kr: "이용 가능한, 구할 수 있는" },
-            { en: "Identify", kr: "확인하다, 찾다" },
-            { en: "Strategy", kr: "전략" }
-        ];
+        let myVocabList = []; // 사용자가 등록한 전체 단어장
+        let currentQueue = []; // 현재 테스트 라운드에서 풀어야 할 단어 큐 (오답 포함해서 계속 갱신됨)
+        let currentIndex = 0; // 현재 큐에서 몇 번째 단어를 보고 있는지
+        let wrongQueueForNextRound = []; // 이번 라운드에서 틀린 단어들만 모아두는 곳
+        let roundCount = 1; // 몇 바퀴째 돌고 있는지
 
-        let currentWordIndex = 0;
-        let memorizedSet = new Set(); // 오늘 외운 단어 기록용
-        let goal = 10; // 하루 목표 개수
-        let isMeaningShown = false;
+        // 1. 단어 추가 함수
+        function addWordToMyList() {
+            const enVal = document.getElementById("inputEn").value.trim();
+            const krVal = document.getElementById("inputKr").value.trim();
 
-        // 🎲 무작위(랜덤)로 단어 뽑아 화면에 띄우기
-        function getRandomWord() {
-            if (vocabList.length === 0) {
-                alert("단어장에 단어가 없습니다! 단어를 추가해주세요.");
-                return;
-            }
-            // 전체 단어 중 무작위 번호 선택
-            currentWordIndex = Math.floor(Math.random() * vocabList.length);
-            const word = vocabList[currentWordIndex];
-
-            document.getElementById("displayEn").textContent = word.en;
-            document.getElementById("displayKr").textContent = word.kr;
-            
-            // 뜻 숨기기 초기화
-            document.getElementById("displayKr").style.display = "none";
-            document.getElementById("toggleMeaningBtn").textContent = "뜻 보기";
-            isMeaningShown = false;
-        }
-
-        // 👁️ 뜻 가리기/보기 토글 버튼
-        function toggleMeaning() {
-            const krElem = document.getElementById("displayKr");
-            const btnElem = document.getElementById("toggleMeaningBtn");
-
-            if (isMeaningShown) {
-                krElem.style.display = "none";
-                btnElem.textContent = "뜻 보기";
-                isMeaningShown = false;
-            } else {
-                krElem.style.display = "block";
-                btnElem.textContent = "뜻 숨기기";
-                isMeaningShown = true;
-            }
-        }
-
-        // ✅ 외운 단어 체크 및 통계 반영
-        function markAsMemorized() {
-            const currentWord = vocabList[currentWordIndex].en;
-            
-            if (!memorizedSet.has(currentWord)) {
-                memorizedSet.add(currentWord);
-                updateStats();
-                alert(`"${currentWord}" 암기 완료! 멋져요 🎉`);
-            } else {
-                alert("이미 오늘 외운 단어입니다! 다른 랜덤 단어를 골라보세요.");
-            }
-            
-            // 자동으로 다음 랜덤 단어 뽑기
-            getRandomWord();
-        }
-
-        // 📈 통계 및 프로그래스바 업데이트
-        function updateStats() {
-            const count = memorizedSet.size;
-            document.getElementById("memorizedCount").textContent = count;
-            
-            let percent = Math.round((count / goal) * 100);
-            if (percent > 100) percent = 100;
-            
-            document.getElementById("progressBar").style.width = `${percent}%`;
-        }
-
-        // ➕ 새로운 단어 추가 함수
-        function addNewWord() {
-            const enInput = document.getElementById("newEn");
-            const krInput = document.getElementById("newKr");
-            
-            const enVal = enInput.value.trim();
-            const krVal = krInput.value.trim();
-
-            if (enVal === "" || krVal === "") {
+            if (!enVal || !krVal) {
                 alert("영어 단어와 한국어 뜻을 모두 입력해주세요!");
                 return;
             }
 
-            vocabList.push({ en: enVal, kr: krVal });
-            alert(`"${enVal}" 단어가 단어장에 추가되었습니다!`);
+            myVocabList.push({ en: enVal, kr: krVal });
             
-            enInput.value = "";
-            krInput.value = "";
-            
-            // 목표 개수도 단어장 길이에 맞춰 자동 연동 (원하면 고정해도 됨)
-            goal = vocabList.length < 10 ? vocabList.length : 10;
-            document.getElementById("goalCount").textContent = goal;
+            // 입력창 초기화
+            document.getElementById("inputEn").value = "";
+            document.getElementById("inputKr").value = "";
+            document.getElementById("inputEn").focus();
+
+            renderPreviewList();
         }
 
-        // 사이트 처음 켤 때 첫 랜덤 단어 자동 실행
-        window.onload = function() {
-            getRandomWord();
-            updateStats();
-        };
+        // 등록된 단어장 목록 화면에 렌더링
+        function renderPreviewList() {
+            const previewBox = document.getElementById("vocabPreviewList");
+            if (myVocabList.length === 0) {
+                previewBox.innerHTML = '<div style="color: #888; text-align: center;">등록된 단어가 없습니다. 아래에서 추가해주세요.</div>';
+                return;
+            }
+
+            let html = "";
+            myVocabList.forEach((item, idx) => {
+                html += `<div class="vocab-item"><span><b>${idx+1}.</b> ${item.en}</span> <span style="color: #555;">${item.kr}</span></div>`;
+            });
+            previewBox.innerHTML = html;
+        }
+
+        // 2. 테스트 시작 버튼
+        function startTest() {
+            if (myVocabList.length === 0) {
+                alert("테스트를 시작하려면 최소 1개 이상의 단어를 등록해주세요!");
+                return;
+            }
+
+            // 초기화
+            roundCount = 1;
+            // 배열 복사 후 랜덤 셔플 (첫 라운드)
+            currentQueue = shuffleArray([...myVocabList]);
+            wrongQueueForNextRound = [];
+            currentIndex = 0;
+
+            // 화면 전환
+            document.getElementById("setupSection").style.display = "none";
+            document.getElementById("testSection").style.display = "block";
+            document.getElementById("completeSection").style.display = "none";
+
+            loadNextTestWord();
+        }
+
+        // 배열을 무작위로 섞는 함수 (Fisher-Yates Shuffle)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // 테스트 단어 불러오기
+        function loadNextTestWord() {
+            // 결과창 및 다음 버튼 초기화
+            document.getElementById("resultDisplayArea").innerHTML = "";
+            document.getElementById("userAnswerInput").value = "";
+            document.getElementById("userAnswerInput").disabled = false;
+            document.getElementById("submitBtn").style.display = "block";
+            document.getElementById("nextBtn").style.display = "none";
+            document.getElementById("roundInfoText").textContent = `현재 ${roundCount}회차 진행 중 (남은 단어: ${currentQueue.length - currentIndex}개)`;
+
+            const currentWord = currentQueue[currentIndex];
+            document.getElementById("testWordEn").textContent = currentWord.en;
+            document.getElementById("userAnswerInput").focus();
+        }
+
+        // 엔터키 입력 지원
+        function checkEnter(event) {
+            if (event.key === "Enter") {
+                submitAnswer();
+            }
+        }
+
+        // 3. 정답 제출 및 채점 로직
+        function submitAnswer() {
+            const userAns = document.getElementById("userAnswerInput").value.trim();
+            if (!userAns) {
+                alert("뜻을 입력해주세요!");
+                return;
+            }
+
+            const currentWord = currentQueue[currentIndex];
+            const resultArea = document.getElementById("resultDisplayArea");
+
+            // 입력창 비활성화 및 제출 버튼 숨기기
+            document.getElementById("userAnswerInput").disabled = true;
+            document.getElementById("submitBtn").style.display = "none";
+            document.getElementById("nextBtn").style.display = "block"; // 다음 단계 버튼 노출
+            document.getElementById("nextBtn").focus();
+
+            // 공백 무시하고 정확히 일치하는지 비교 (또는 포함하는지 확인 가능)
+            if (userAns === currentWord.kr) {
+                // [맞았을 때] O 표시와 미리 작성한 뜻 보여주기
+                resultArea.innerHTML = `<span class="correct-mark">⭕ O 정답입니다!</span><br><span style="font-size: 1.1rem; color: #333;">정답 뜻: <b>${currentWord.kr}</b></span>`;
+            } else {
+                // [틀렸을 때] 빨간색 X 표시와 빨강색 글씨로 미리 작성한 뜻 보여주기
+                resultArea.innerHTML = `<span class="wrong-mark">❌ X 틀렸습니다!</span><br><span style="font-size: 1.1rem; color: #dc3545;">미리 작성한 뜻: <b>${currentWord.kr}</b></span>`;
+                
+                // 틀린 단어는 다음 라운드(오답 반복 큐)에 수집
+                wrongQueueForNextRound.push(currentWord);
+            }
+        }
+
+        // 4. 다음 단어로 넘어가기 또는 사이클 종료 후 재시작
+        function nextStep() {
+            currentIndex++;
+
+            // 현재 큐의 모든 단어를 다 풀었을 때
+            if (currentIndex >= currentQueue.length) {
+                if (wrongQueueForNextRound.length === 0) {
+                    // 틀린 단어가 하나도 없다면 전체 정복 완료!
+                    document.getElementById("testSection").style.display = "none";
+                    document.getElementById("completeSection").style.display = "block";
+                    return;
+                } else {
+                    // 틀린 단어들이 남아있다면 사이클을 다시 돌림 (스플릿 & 랜덤 셔플)
+                    roundCount++;
+                    alert(`1바퀴가 끝났습니다! 틀린 단어 ${wrongQueueForNextRound.length}개를 모아서 다시 랜덤으로 테스트를 시작합니다.`);
+                    
+                    currentQueue = shuffleArray([...wrongQueueForNextRound]);
+                    wrongQueueForNextRound = [];
+                    currentIndex = 0;
+                    loadNextTestWord();
+                }
+            } else {
+                // 아직 남은 단어가 있다면 다음 단어 로드
+                loadNextTestWord();
+            }
+        }
+
+        // 처음으로 초기화
+        function resetAll() {
+            myVocabList = [];
+            currentQueue = [];
+            wrongQueueForNextRound = [];
+            currentIndex = 0;
+            roundCount = 1;
+            renderPreviewList();
+
+            document.getElementById("setupSection").style.display = "block";
+            document.getElementById("testSection").style.display = "none";
+            document.getElementById("completeSection").style.display = "none";
+        }
     </script>
 </body>
 </html>
