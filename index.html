@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>매일 매일 영단어 암기 트래커</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { font-size: 2.2rem; margin-bottom: 10px; color: #222; }
+        p.subtitle { color: #666; margin-bottom: 30px; }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        /* 🎴 플래시카드 스타일 */
+        .card {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .word-en {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        .word-kr {
+            font-size: 1.5rem;
+            color: #28a745;
+            font-weight: 600;
+            display: none; /* 평소엔 숨겨둠 */
+            margin-top: 10px;
+        }
+
+        .show-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-top: 10px;
+        }
+        .show-btn:hover { background-color: #5a6268; }
+
+        /* 🕹️ 컨트롤 버튼 구역 */
+        .action-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-random { background-color: #17a2b8; color: white; }
+        .btn-random:hover { background-color: #138496; }
+
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-success:hover { background-color: #218838; }
+
+        /* 📊 통계 대시보드 */
+        .stats-box {
+            background-color: #f1f3f5;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .progress-bar-container {
+            background-color: #dee2e6;
+            width: 100%;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        #progressBar {
+            background-color: #28a745;
+            width: 0%;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        /* ➕ 단어 추가 폼 */
+        .add-section {
+            margin-top: 30px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        .add-inputs {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .add-inputs input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        .btn-add {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-add:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+
+    <h1>🧠 데일리 영단어 암기 트래커</h1>
+    <p class="subtitle">매일 무작위로 단어를 뽑고 외운 개수를 체크해 보세요!</p>
+
+    <div class="container">
+        <!-- 🎴 단어 플래시카드 화면 -->
+        <div class="card" id="cardBox">
+            <div class="word-en" id="displayEn">단어장을 준비 중입니다...</div>
+            <button class="show-btn" id="toggleMeaningBtn" onclick="toggleMeaning()">뜻 보기</button>
+            <div class="word-kr" id="displayKr">뜻이 여기에 표시됩니다</div>
+        </div>
+
+        <!-- 🕹️ 액션 버튼 (다음 랜덤 단어 / 외움 완료) -->
+        <div class="action-group">
+            <button class="btn btn-random" onclick="getRandomWord()">🎲 다른 랜덤 단어</button>
+            <button class="btn btn-success" onclick="markAsMemorized()">✅ 외웠어요! 완료</button>
+        </div>
+
+        <!-- 📊 오늘의 학습 통계 -->
+        <div class="stats-box">
+            <strong>📊 오늘의 암기 현황</strong>
+            <div style="margin-top: 8px;">
+                오늘 외운 단어: <span id="memorizedCount" style="font-weight:bold; color:#28a745;">0</span>개 / 
+                목표 단어: <span id="goalCount" style="font-weight:bold;">10</span>개
+            </div>
+            <div class="progress-bar-container">
+                <div id="progressBar"></div>
+            </div>
+        </div>
+
+        <!-- ➕ 나만의 단어 추가하기 구역 -->
+        <div class="add-section">
+            <strong>➕ 나만의 단어 추가하기</strong>
+            <div class="add-inputs">
+                <input type="text" id="newEn" placeholder="영어 단어 (예: Apple)">
+                <input type="text" id="newKr" placeholder="한국어 뜻 (예: 사과)">
+                <button class="btn-add" onclick="addNewWord()">추가</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 기본 단어장 데이터베이스 (원하는 만큼 추가하거나 수정 가능합니다)
+        let vocabList = [
+            { en: "Achieve", kr: "달성하다, 성취하다" },
+            { en: "Significant", kr: "중대한, 의미 있는" },
+            { en: "Environment", kr: "환경" },
+            { en: "Challenge", kr: "도전, 난제" },
+            { en: "Efficient", kr: "효율적인" },
+            { en: "Establish", kr: "설립하다, 확립하다" },
+            { en: "Perspective", kr: "관점, 시각" },
+            { en: "Available", kr: "이용 가능한, 구할 수 있는" },
+            { en: "Identify", kr: "확인하다, 찾다" },
+            { en: "Strategy", kr: "전략" }
+        ];
+
+        let currentWordIndex = 0;
+        let memorizedSet = new Set(); // 오늘 외운 단어 기록용
+        let goal = 10; // 하루 목표 개수
+        let isMeaningShown = false;
+
+        // 🎲 무작위(랜덤)로 단어 뽑아 화면에 띄우기
+        function getRandomWord() {
+            if (vocabList.length === 0) {
+                alert("단어장에 단어가 없습니다! 단어를 추가해주세요.");
+                return;
+            }
+            // 전체 단어 중 무작위 번호 선택
+            currentWordIndex = Math.floor(Math.random() * vocabList.length);
+            const word = vocabList[currentWordIndex];
+
+            document.getElementById("displayEn").textContent = word.en;
+            document.getElementById("displayKr").textContent = word.kr;
+            
+            // 뜻 숨기기 초기화
+            document.getElementById("displayKr").style.display = "none";
+            document.getElementById("toggleMeaningBtn").textContent = "뜻 보기";
+            isMeaningShown = false;
+        }
+
+        // 👁️ 뜻 가리기/보기 토글 버튼
+        function toggleMeaning() {
+            const krElem = document.getElementById("displayKr");
+            const btnElem = document.getElementById("toggleMeaningBtn");
+
+            if (isMeaningShown) {
+                krElem.style.display = "none";
+                btnElem.textContent = "뜻 보기";
+                isMeaningShown = false;
+            } else {
+                krElem.style.display = "block";
+                btnElem.textContent = "뜻 숨기기";
+                isMeaningShown = true;
+            }
+        }
+
+        // ✅ 외운 단어 체크 및 통계 반영
+        function markAsMemorized() {
+            const currentWord = vocabList[currentWordIndex].en;
+            
+            if (!memorizedSet.has(currentWord)) {
+                memorizedSet.add(currentWord);
+                updateStats();
+                alert(`"${currentWord}" 암기 완료! 멋져요 🎉`);
+            } else {
+                alert("이미 오늘 외운 단어입니다! 다른 랜덤 단어를 골라보세요.");
+            }
+            
+            // 자동으로 다음 랜덤 단어 뽑기
+            getRandomWord();
+        }
+
+        // 📈 통계 및 프로그래스바 업데이트
+        function updateStats() {
+            const count = memorizedSet.size;
+            document.getElementById("memorizedCount").textContent = count;
+            
+            let percent = Math.round((count / goal) * 100);
+            if (percent > 100) percent = 100;
+            
+            document.getElementById("progressBar").style.width = `${percent}%`;
+        }
+
+        // ➕ 새로운 단어 추가 함수
+        function addNewWord() {
+            const enInput = document.getElementById("newEn");
+            const krInput = document.getElementById("newKr");
+            
+            const enVal = enInput.value.trim();
+            const krVal = krInput.value.trim();
+
+            if (enVal === "" || krVal === "") {
+                alert("영어 단어와 한국어 뜻을 모두 입력해주세요!");
+                return;
+            }
+
+            vocabList.push({ en: enVal, kr: krVal });
+            alert(`"${enVal}" 단어가 단어장에 추가되었습니다!`);
+            
+            enInput.value = "";
+            krInput.value = "";
+            
+            // 목표 개수도 단어장 길이에 맞춰 자동 연동 (원하면 고정해도 됨)
+            goal = vocabList.length < 10 ? vocabList.length : 10;
+            document.getElementById("goalCount").textContent = goal;
+        }
+
+        // 사이트 처음 켤 때 첫 랜덤 단어 자동 실행
+        window.onload = function() {
+            getRandomWord();
+            updateStats();
+        };
+    </script>
+</body>
+</html>
